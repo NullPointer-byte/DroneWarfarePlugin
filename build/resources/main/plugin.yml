@@ -1,0 +1,15 @@
+name: DroneWarfarePlugin
+version: 1.0.0
+main: ru.dronewarfare.DroneWarfarePlugin
+api-version: '1.21'
+folia-supported: true
+
+commands:
+  drone:
+    description: DroneWarfare command
+    usage: /drone
+    permission: dronewarfare.command
+
+permissions:
+  dronewarfare.command:
+    default: op

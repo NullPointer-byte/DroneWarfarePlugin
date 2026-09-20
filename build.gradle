@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+}
+
+group = 'ru.dronewarfare'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+
+    maven {
+        name = 'papermc'
+        url = 'https://repo.papermc.io/repository/maven-public/'
+    }
+}
+
+dependencies {
+    compileOnly 'dev.folia:folia-api:1.21.11-R0.1-SNAPSHOT'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+processResources {
+    filesMatching('plugin.yml') {
+        expand(version: project.version)
+    }
+}
