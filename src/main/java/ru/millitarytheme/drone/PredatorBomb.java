@@ -13,6 +13,7 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.util.Vector;
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import ru.millitarytheme.ExplosionUtil;
 import ru.millitarytheme.MillitaryTheme;
 
 public class PredatorBomb {
@@ -230,13 +231,25 @@ public class PredatorBomb {
                 location,
                 EXPLOSION_POWER,
                 false,
-                true,
+                false,
                 owner
         );
 
         createDustWave(location);
 
-        breakGlass(location);
+        makeBomb(location);
+    }
+
+    public void makeBomb(Location center) {
+        // Ограничим сверху, чтобы не копать лишнего.
+        // maxY = +2 от центра — можно настроить.
+        ExplosionUtil.makeCrater(
+                plugin,
+                center,
+                18,   // radius
+                2,    // maxY
+                "#Drone"
+        );
     }
 
     private void createDustWave(Location center) {
@@ -282,61 +295,6 @@ public class PredatorBomb {
                 4.0f,
                 0.65f
         );
-    }
-
-    private void breakGlass(Location center) {
-
-        World world =
-                center.getWorld();
-
-        if (world == null) {
-            return;
-        }
-
-        int radius = 18;
-
-        for (int x = -radius; x <= radius; x++) {
-
-            for (int y = -radius; y <= radius; y++) {
-
-                for (int z = -radius; z <= radius; z++) {
-
-                    double distanceSquared =
-                            x * x +
-                            y * y +
-                            z * z;
-
-                    if (distanceSquared >
-                            radius * radius) {
-                        continue;
-                    }
-
-                    Block block =
-                            world.getBlockAt(
-                                    center.getBlockX() + x,
-                                    center.getBlockY() + y,
-                                    center.getBlockZ() + z
-                            );
-
-                    Material material =
-                            block.getType();
-
-                    if (isGlass(material)) {
-                        block.breakNaturally();
-                    }
-                }
-            }
-        }
-    }
-
-    private boolean isGlass(Material material) {
-
-        String name =
-                material.name();
-
-        return name.equals("GLASS")
-                || name.endsWith("_GLASS")
-                || name.endsWith("_GLASS_PANE");
     }
 
     public void remove() {

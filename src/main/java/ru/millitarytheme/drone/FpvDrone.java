@@ -12,6 +12,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
+import ru.millitarytheme.ExplosionUtil;
+import ru.millitarytheme.MillitaryTheme;
 
 public final class FpvDrone {
 
@@ -374,7 +376,15 @@ public final class FpvDrone {
                             location,
                             EXPLOSION_POWER,
                             false,
-                            true
+                            false
+                    );
+
+                    ExplosionUtil.makeCrater(
+                            (MillitaryTheme) plugin,
+                            location,
+                            4,           // FPV полегче
+                            2,
+                            "#FpvDrone"
                     );
                 }
         );
