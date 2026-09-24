@@ -10,6 +10,8 @@ import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
+import ru.millitarytheme.ExplosionUtil;
+import ru.millitarytheme.MillitaryTheme;
 
 public final class Drone {
 
@@ -224,10 +226,7 @@ public final class Drone {
 
     public void explode(Location location) {
 
-        if (destroyed) {
-            return;
-        }
-
+        if (destroyed) return;
         destroyed = true;
 
         manager.unregister(pilot);
@@ -239,26 +238,26 @@ public final class Drone {
 
         spawnCrashEffect(location);
 
-        Bukkit.getRegionScheduler().execute(
-                plugin,
-                location,
-                () -> {
+        World world = location.getWorld();
+        if (world != null) {
 
-                    World world =
-                            location.getWorld();
+            // Взрыв без разрушения — только урон/эффект.
+            world.createExplosion(
+                    location,
+                    EXPLOSION_POWER,
+                    false,   // setFire
+                    false    // breakBlocks
+            );
 
-                    if (world == null) {
-                        return;
-                    }
-
-                    world.createExplosion(
-                            location,
-                            EXPLOSION_POWER,
-                            true,
-                            true
-                    );
-                }
-        );
+            // Своя воронка с логом.
+            ExplosionUtil.makeCrater(
+                    (MillitaryTheme) plugin,
+                    location,
+                    6,       // радиус для обычного дрона
+                    2,       // maxY
+                    "#DroneFlight"
+            );
+        }
 
         returnPilot();
     }
