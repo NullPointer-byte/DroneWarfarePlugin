@@ -12,10 +12,19 @@ repositories {
         name = 'papermc'
         url = 'https://repo.papermc.io/repository/maven-public/'
     }
+
+    // Добавляем репозиторий JitPack
+    maven {
+        name = 'jitpack'
+        url = 'https://jitpack.io'
+    }
 }
 
 dependencies {
     compileOnly 'dev.folia:folia-api:1.21.11-R0.1-SNAPSHOT'
+
+    // FlorestRollback через JitPack
+    compileOnly 'com.github.FlorestMCServer:FlorestRollback:1.2'
 }
 
 java {
