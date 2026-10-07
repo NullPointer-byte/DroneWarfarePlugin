@@ -6,6 +6,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import ru.millitarytheme.EconomyManager;
 import ru.millitarytheme.MillitaryTheme;
 import ru.millitarytheme.drone.Drone;
 import ru.millitarytheme.drone.DroneManager;
@@ -57,6 +58,13 @@ public final class DroneCommand implements CommandExecutor {
          */
         if (args[0].equalsIgnoreCase("shahed")) {
 
+            if (!EconomyManager.canAfford(player, 20000)) {
+                player.sendMessage("У вас нет 20 тысяч единиц валюты для запуска шахеда!");
+                return true;
+            }
+
+            EconomyManager.withdraw(player, 20000);
+
             Drone drone = droneManager.launch(player);
 
             if (drone == null) {
@@ -78,6 +86,13 @@ public final class DroneCommand implements CommandExecutor {
          */
         if (args[0].equalsIgnoreCase("fpv")) {
 
+            if (!EconomyManager.canAfford(player, 10000)) {
+                player.sendMessage("У вас нет 10 тысяч единиц валюты для запуска шахеда!");
+                return true;
+            }
+
+            EconomyManager.withdraw(player, 10000);
+
             FpvDrone drone = droneManager.launchFpv(player);
 
             if (drone == null) {
@@ -98,6 +113,13 @@ public final class DroneCommand implements CommandExecutor {
          * MQ-1 Predator.
          */
         if (args[0].equalsIgnoreCase("predator")) {
+
+            if (!EconomyManager.canAfford(player, 45000)) {
+                player.sendMessage("У вас нет 45 тысяч единиц валюты для запуска шахеда!");
+                return true;
+            }
+
+            EconomyManager.withdraw(player, 45000);
 
             Location location = player.getLocation()
                     .clone()

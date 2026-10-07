@@ -21,6 +21,8 @@ public final class MillitaryTheme extends JavaPlugin {
     public void onEnable() {
         droneManager = new DroneManager(this);
 
+        EconomyManager.setupEconomy();
+
         if (getCommand("drone") != null) {
             getCommand("drone").setExecutor(
                     new DroneCommand(droneManager, this)
