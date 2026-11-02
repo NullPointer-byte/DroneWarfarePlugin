@@ -4,7 +4,9 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import ru.millitarytheme.command.DroneCommand;
+import ru.millitarytheme.command.GunCommand;
 import ru.millitarytheme.drone.DroneManager;
+import ru.millitarytheme.guns.*;
 import ru.millitarytheme.listener.DroneListener;
 import ru.florestdev.florestRollback.FlorestRollback;
 
@@ -29,10 +31,16 @@ public final class MillitaryTheme extends JavaPlugin {
             );
         }
 
+        if (getCommand("gun") != null) {
+            getCommand("gun").setExecutor(new GunCommand(this));
+        }
+
         getServer().getPluginManager().registerEvents(
                 new DroneListener(droneManager),
                 this
         );
+
+        getServer().getPluginManager().registerEvents(new InstallRPOnConnect(), this);
 
         Plugin getter = this.getServer().getPluginManager().getPlugin("FlorestRollback");
         if (getter != null) {
@@ -41,6 +49,14 @@ public final class MillitaryTheme extends JavaPlugin {
             getLogger().severe("FlorestRollback is not responding!");
             getServer().getPluginManager().disablePlugin(this);
         }
+
+        // GUNS
+        getServer().getPluginManager().registerEvents(new RPG(this), this);
+        getServer().getPluginManager().registerEvents(new Pistol(this), this);
+        getServer().getPluginManager().registerEvents(new AK(this), this);
+        getServer().getPluginManager().registerEvents(new Shotgun(this), this);
+        getServer().getPluginManager().registerEvents(new Sniper(this), this);
+        getServer().getPluginManager().registerEvents(new Flamethrower(this), this);
 
         getLogger().info("MillitaryTheme enabled.");
     }
