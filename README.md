@@ -95,7 +95,7 @@
 ### Шаги
 
 ```bash
-git clone https://github.com/<your-org>/MillitaryTheme.git
+git clone https://github.com/NullPointer-byte/MillitaryTheme.git
 cd MillitaryTheme
 ./gradlew build
 ```
