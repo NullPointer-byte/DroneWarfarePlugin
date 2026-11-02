@@ -15,11 +15,11 @@ public class InstallRPOnConnect implements Listener {
         Player player = event.getPlayer();
         GeyserApi api = GeyserApi.api();
         if (api == null) {
-            player.setResourcePack("https://github.com/florestdev/DroneWarfarePlugin/blob/florest_code/datapack/MilitaryThemeGuns.zip");
+            player.setResourcePack("https://raw.githubusercontent.com/florestdev/DroneWarfarePlugin/florest_code/datapack/MilitaryThemeGuns.zip");
             return;
         }
         if (!api.isBedrockPlayer(player.getUniqueId())) {
-            player.setResourcePack("https://github.com/florestdev/DroneWarfarePlugin/blob/florest_code/datapack/MilitaryThemeGuns.zip");
+            player.setResourcePack("https://raw.githubusercontent.com/florestdev/DroneWarfarePlugin/florest_code/datapack/MilitaryThemeGuns.zip");
         }
     }
 }
