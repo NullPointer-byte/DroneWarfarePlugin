@@ -1,0 +1,24 @@
+{
+  "resource_pack_name": "Military Theme Guns",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "militarytheme_ak": {
+      "textures": "textures/items/ak"
+    },
+    "militarytheme_flamethrower": {
+      "textures": "textures/items/flamethrower"
+    },
+    "militarytheme_pistol": {
+      "textures": "textures/items/pistol"
+    },
+    "militarytheme_rpg": {
+      "textures": "textures/items/rpg"
+    },
+    "militarytheme_shotgun": {
+      "textures": "textures/items/shotgun"
+    },
+    "militarytheme_sniper": {
+      "textures": "textures/items/sniper"
+    }
+  }
+}

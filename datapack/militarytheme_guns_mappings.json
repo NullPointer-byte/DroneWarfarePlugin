@@ -1,0 +1,81 @@
+{
+  "format_version": 2,
+  "items": {
+    "minecraft:bow": [
+      {
+        "type": "definition",
+        "model": "militarytheme:ak_model",
+        "bedrock_identifier": "militarytheme:ak",
+        "display_name": "§6АК",
+        "bedrock_options": {
+          "icon": "militarytheme_ak",
+          "display_handheld": true,
+          "creative_category": "equipment",
+          "allow_offhand": false
+        }
+      },
+      {
+        "type": "definition",
+        "model": "militarytheme:flamethrower_model",
+        "bedrock_identifier": "militarytheme:flamethrower",
+        "display_name": "§6Огнемёт",
+        "bedrock_options": {
+          "icon": "militarytheme_flamethrower",
+          "display_handheld": true,
+          "creative_category": "equipment",
+          "allow_offhand": false
+        }
+      },
+      {
+        "type": "definition",
+        "model": "militarytheme:pistol_model",
+        "bedrock_identifier": "militarytheme:pistol",
+        "display_name": "§eПистолет",
+        "bedrock_options": {
+          "icon": "militarytheme_pistol",
+          "display_handheld": true,
+          "creative_category": "equipment",
+          "allow_offhand": false
+        }
+      },
+      {
+        "type": "definition",
+        "model": "militarytheme:shotgun_model",
+        "bedrock_identifier": "militarytheme:shotgun",
+        "display_name": "§cДробовик",
+        "bedrock_options": {
+          "icon": "militarytheme_shotgun",
+          "display_handheld": true,
+          "creative_category": "equipment",
+          "allow_offhand": false
+        }
+      },
+      {
+        "type": "definition",
+        "model": "militarytheme:sniper_model",
+        "bedrock_identifier": "militarytheme:sniper",
+        "display_name": "§bСнайперка",
+        "bedrock_options": {
+          "icon": "militarytheme_sniper",
+          "display_handheld": true,
+          "creative_category": "equipment",
+          "allow_offhand": false
+        }
+      }
+    ],
+    "minecraft:crossbow": [
+      {
+        "type": "definition",
+        "model": "militarytheme:rpg_model",
+        "bedrock_identifier": "militarytheme:rpg",
+        "display_name": "§cRPG",
+        "bedrock_options": {
+          "icon": "militarytheme_rpg",
+          "display_handheld": true,
+          "creative_category": "equipment",
+          "allow_offhand": false
+        }
+      }
+    ]
+  }
+}
