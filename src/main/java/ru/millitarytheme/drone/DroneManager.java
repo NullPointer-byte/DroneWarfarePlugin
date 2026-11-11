@@ -7,16 +7,17 @@ import java.util.UUID;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import ru.millitarytheme.MillitaryTheme;
 
 public final class DroneManager {
 
-    private final JavaPlugin plugin;
+    private final MillitaryTheme plugin;
 
     private final Map<UUID, Drone> drones = new HashMap<>();
 
     private final Map<UUID, FpvDrone> fpvDrones = new HashMap<>();
 
-    public DroneManager(JavaPlugin plugin) {
+    public DroneManager(MillitaryTheme plugin) {
         this.plugin = plugin;
     }
 
