@@ -2,13 +2,19 @@ package ru.millitarytheme.drone;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Transformation;
 import org.bukkit.util.Vector;
 import ru.millitarytheme.ExplosionUtil;
 import ru.millitarytheme.MillitaryTheme;
@@ -27,7 +33,7 @@ public final class Drone {
 
     private int soundTick = 0;
 
-    private final JavaPlugin plugin;
+    private final MillitaryTheme plugin;
 
     private final DroneManager manager;
 
@@ -37,10 +43,12 @@ public final class Drone {
 
     private Phantom phantom;
 
+    private ItemDisplay droneDisplay;
+
     private boolean destroyed;
 
     public Drone(
-            JavaPlugin plugin,
+            MillitaryTheme plugin,
             DroneManager manager,
             Player pilot
     ) {
@@ -80,15 +88,102 @@ public final class Drone {
                             EntityType.PHANTOM
                     );
 
+                    /*
+                     * AI НЕ отключаем — иначе ломается
+                     * управление и пилот слетает.
+                     */
                     phantom.setInvulnerable(false);
                     phantom.setSilent(false);
                     phantom.setHealth(8.0);
 
                     phantom.addPassenger(pilot);
 
+                    /*
+                     * Модель — видна ВСЕМ.
+                     */
+                    spawnDisplay(spawnLocation, world);
+
+                    /*
+                     * Phantom — виден ТОЛЬКО пилоту.
+                     */
+                    hidePhantomFromEveryoneExceptPilot();
+
                     startFlight();
                 }
         );
+    }
+
+    private void spawnDisplay(
+            Location location,
+            World world
+    ) {
+
+        droneDisplay = world.spawn(
+                location,
+                ItemDisplay.class,
+                display -> {
+
+                    ItemStack modelItem =
+                            new ItemStack(Material.PAPER);
+
+                    ItemMeta meta =
+                            modelItem.getItemMeta();
+
+                    if (meta != null) {
+                        meta.setItemModel(
+                                new NamespacedKey(
+                                        "militarytheme",
+                                        "drone_model"
+                                )
+                        );
+                        modelItem.setItemMeta(meta);
+                    }
+
+                    display.setItemStack(modelItem);
+
+                    display.setTransformation(
+                            new Transformation(
+                                    new org.joml.Vector3f(0f, 0f, 0f),
+                                    new org.joml.Quaternionf(),
+                                    new org.joml.Vector3f(1.5f, 1.5f, 1.5f),
+                                    new org.joml.Quaternionf()
+                            )
+                    );
+
+                    /*
+                     * По умолчанию модель видна всем.
+                     */
+                    display.setVisibleByDefault(true);
+                    display.setPersistent(false);
+                }
+        );
+    }
+
+    /*
+     * Прячем Phantom от ВСЕХ, кроме пилота.
+     */
+    private void hidePhantomFromEveryoneExceptPilot() {
+
+        if (phantom == null) {
+            return;
+        }
+
+        for (Player online : Bukkit.getOnlinePlayers()) {
+
+            if (online.equals(pilot)) {
+                continue;
+            }
+
+            online.getScheduler().run(
+                    plugin,
+                    task -> {
+                        if (phantom != null && phantom.isValid()) {
+                            online.hideEntity(plugin, phantom);
+                        }
+                    },
+                    null
+            );
+        }
     }
 
     private void startFlight() {
@@ -124,6 +219,10 @@ public final class Drone {
 
     private void updateFlight() {
 
+        if (!phantom.getPassengers().contains(pilot)) {
+            phantom.addPassenger(pilot);
+        }
+
         Location current =
                 phantom.getLocation();
 
@@ -143,7 +242,9 @@ public final class Drone {
                 current,
                 direction
         )) {
+
             explode(current);
+
             return;
         }
 
@@ -156,7 +257,8 @@ public final class Drone {
                 direction.multiply(SPEED)
         );
 
-        // Поддерживаем непрерывный звук во время полёта.
+        syncDisplay(current, yaw, pitch);
+
         soundTick++;
 
         if (soundTick >= SOUND_INTERVAL) {
@@ -165,13 +267,30 @@ public final class Drone {
 
             World world = phantom.getWorld();
 
-            world.playSound(
-                    phantom,
-                    Sound.ENTITY_BEE_LOOP,
-                    0.8F,
-                    SOUND_PITCH
-            );
+            if (world != null) {
+                world.playSound(
+                        phantom.getLocation(),
+                        Sound.ENTITY_BEE_LOOP,
+                        0.8F,
+                        SOUND_PITCH
+                );
+            }
         }
+    }
+
+    private void syncDisplay(
+            Location location,
+            float yaw,
+            float pitch
+    ) {
+
+        if (droneDisplay == null
+                || !droneDisplay.isValid()) {
+            return;
+        }
+
+        droneDisplay.teleport(location);
+        droneDisplay.setRotation(yaw, pitch);
     }
 
     private Vector getDirection(
@@ -215,54 +334,100 @@ public final class Drone {
             return true;
         }
 
-        return world.rayTraceBlocks(
-                location,
-                direction,
-                COLLISION_DISTANCE,
-                org.bukkit.FluidCollisionMode.NEVER,
-                true
-        ) != null;
+        RayTraceResult result =
+                world.rayTraceBlocks(
+                        location,
+                        direction,
+                        COLLISION_DISTANCE,
+                        org.bukkit.FluidCollisionMode.NEVER,
+                        true
+                );
+
+        return result != null;
     }
 
     public void explode(Location location) {
 
-        if (destroyed) return;
+        if (destroyed) {
+            return;
+        }
+
         destroyed = true;
 
         manager.unregister(pilot);
 
-        if (phantom != null && phantom.isValid()) {
-            phantom.removePassenger(pilot);
-            phantom.remove();
-        }
+        cleanupEntities();
 
         spawnCrashEffect(location);
 
-        World world = location.getWorld();
-        if (world != null) {
+        Bukkit.getRegionScheduler().execute(
+                plugin,
+                location,
+                () -> {
 
-            // Взрыв без разрушения — только урон/эффект.
-            world.createExplosion(
-                    location,
-                    EXPLOSION_POWER,
-                    false,   // setFire
-                    false    // breakBlocks
-            );
+                    World world =
+                            location.getWorld();
 
-            // Своя воронка с логом.
-            ExplosionUtil.makeCrater(
-                    (MillitaryTheme) plugin,
-                    location,
-                    6,       // радиус для обычного дрона
-                    2,       // maxY
-                    "#DroneFlight"
-            );
-        }
+                    if (world == null) {
+                        return;
+                    }
+
+                    // Взрыв без разрушения — только урон/эффект.
+                    world.createExplosion(
+                            location,
+                            EXPLOSION_POWER,
+                            false,   // setFire
+                            false    // breakBlocks
+                    );
+
+                    // Своя воронка с логом.
+                    ExplosionUtil.makeCrater(
+                            plugin,
+                            location,
+                            6,       // радиус для обычного дрона
+                            2,       // maxY
+                            "#DroneFlight"
+                    );
+                }
+        );
 
         returnPilot();
     }
 
-    private void spawnCrashEffect(Location location) {
+    public void destroy() {
+
+        if (destroyed) {
+            return;
+        }
+
+        destroyed = true;
+
+        manager.unregister(pilot);
+
+        cleanupEntities();
+
+        returnPilot();
+    }
+
+    private void cleanupEntities() {
+
+        if (phantom != null && phantom.isValid()) {
+
+            phantom.removePassenger(pilot);
+
+            phantom.remove();
+        }
+
+        if (droneDisplay != null
+                && droneDisplay.isValid()) {
+
+            droneDisplay.remove();
+        }
+    }
+
+    private void spawnCrashEffect(
+            Location location
+    ) {
 
         World world =
                 location.getWorld();
@@ -319,31 +484,15 @@ public final class Drone {
         );
     }
 
-    public void destroy() {
-
-        if (destroyed) {
-            return;
-        }
-
-        destroyed = true;
-
-        manager.unregister(pilot);
-
-        if (phantom != null && phantom.isValid()) {
-            phantom.removePassenger(pilot);
-            phantom.remove();
-        }
-
-        returnPilot();
-    }
-
     private void returnPilot() {
 
         if (!pilot.isOnline()) {
             return;
         }
 
-        pilot.teleportAsync(returnLocation);
+        pilot.teleportAsync(
+                returnLocation
+        );
     }
 
     public Phantom getPhantom() {

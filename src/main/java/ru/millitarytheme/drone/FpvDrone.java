@@ -2,15 +2,20 @@ package ru.millitarytheme.drone;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Bat;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Transformation;
 import org.bukkit.util.Vector;
 import ru.millitarytheme.ExplosionUtil;
 import ru.millitarytheme.MillitaryTheme;
@@ -27,7 +32,7 @@ public final class FpvDrone {
 
     private static final float SOUND_PITCH = 3.35F;
 
-    private final JavaPlugin plugin;
+    private final MillitaryTheme plugin;
 
     private final DroneManager manager;
 
@@ -37,12 +42,14 @@ public final class FpvDrone {
 
     private Bat bat;
 
+    private ItemDisplay droneDisplay;
+
     private boolean destroyed;
 
     private long soundTick;
 
     public FpvDrone(
-            JavaPlugin plugin,
+            MillitaryTheme plugin,
             DroneManager manager,
             Player pilot
     ) {
@@ -83,15 +90,13 @@ public final class FpvDrone {
                     );
 
                     /*
-                     * AI НЕ отключаем.
+                     * AI НЕ отключаем — иначе ломается
+                     * управление и пилот слетает.
                      */
                     bat.setInvulnerable(false);
                     bat.setSilent(false);
                     bat.setAwake(true);
 
-                    /*
-                     * Увеличиваем летучую мышь.
-                     */
                     if (bat.getAttribute(
                             Attribute.SCALE
                     ) != null) {
@@ -101,14 +106,97 @@ public final class FpvDrone {
                         ).setBaseValue(2.5);
                     }
 
-                    /*
-                     * Игрок управляет мышью.
-                     */
                     bat.addPassenger(pilot);
+
+                    /*
+                     * Модель — видна ВСЕМ.
+                     */
+                    spawnDisplay(spawnLocation, world);
+
+                    /*
+                     * Bat — виден ТОЛЬКО пилоту,
+                     * остальные его не видят.
+                     */
+                    hideBatFromEveryoneExceptPilot();
 
                     startFlight();
                 }
         );
+    }
+
+    private void spawnDisplay(
+            Location location,
+            World world
+    ) {
+
+        droneDisplay = world.spawn(
+                location,
+                ItemDisplay.class,
+                display -> {
+
+                    ItemStack modelItem =
+                            new ItemStack(Material.PAPER);
+
+                    ItemMeta meta =
+                            modelItem.getItemMeta();
+
+                    if (meta != null) {
+                        meta.setItemModel(
+                                new NamespacedKey(
+                                        "militarytheme",
+                                        "fpv_drone_model"
+                                )
+                        );
+                        modelItem.setItemMeta(meta);
+                    }
+
+                    display.setItemStack(modelItem);
+
+                    display.setTransformation(
+                            new Transformation(
+                                    new org.joml.Vector3f(0f, 0f, 0f),
+                                    new org.joml.Quaternionf(),
+                                    new org.joml.Vector3f(1.0f, 1.0f, 1.0f),
+                                    new org.joml.Quaternionf()
+                            )
+                    );
+
+                    /*
+                     * По умолчанию модель видна всем.
+                     */
+                    display.setVisibleByDefault(true);
+                    display.setPersistent(false);
+                }
+        );
+    }
+
+    /*
+     * Прячем Bat от ВСЕХ, кроме пилота.
+     * Пилот видит Bat (нужен для камеры/управления),
+     * остальные — только ItemDisplay.
+     */
+    private void hideBatFromEveryoneExceptPilot() {
+
+        if (bat == null) {
+            return;
+        }
+
+        for (Player online : Bukkit.getOnlinePlayers()) {
+
+            if (online.equals(pilot)) {
+                continue;
+            }
+
+            online.getScheduler().run(
+                    plugin,
+                    task -> {
+                        if (bat != null && bat.isValid()) {
+                            online.hideEntity(plugin, bat);
+                        }
+                    },
+                    null
+            );
+        }
     }
 
     private void startFlight() {
@@ -144,6 +232,10 @@ public final class FpvDrone {
 
     private void updateFlight() {
 
+        if (!bat.getPassengers().contains(pilot)) {
+            bat.addPassenger(pilot);
+        }
+
         Location current =
                 bat.getLocation();
 
@@ -172,12 +264,11 @@ public final class FpvDrone {
 
             spawnIdleParticles(current);
 
+            syncDisplay(current, yaw, pitch);
+
             return;
         }
 
-        /*
-         * Проверяем блок перед мышью.
-         */
         if (hasBlockCollision(
                 current,
                 direction
@@ -188,10 +279,6 @@ public final class FpvDrone {
             return;
         }
 
-        /*
-         * Управляем полётом через velocity.
-         * AI при этом остаётся включённым.
-         */
         bat.setRotation(
                 yaw,
                 pitch
@@ -207,6 +294,23 @@ public final class FpvDrone {
         );
 
         playFlightSound(current);
+
+        syncDisplay(current, yaw, pitch);
+    }
+
+    private void syncDisplay(
+            Location location,
+            float yaw,
+            float pitch
+    ) {
+
+        if (droneDisplay == null
+                || !droneDisplay.isValid()) {
+            return;
+        }
+
+        droneDisplay.teleport(location);
+        droneDisplay.setRotation(yaw, pitch);
     }
 
     private Vector getDirection(
@@ -263,23 +367,23 @@ public final class FpvDrone {
     }
 
     private void playFlightSound(Location location) {
-    if (soundTick++ % SOUND_INTERVAL != 0) {
-        return;
+        if (soundTick++ % SOUND_INTERVAL != 0) {
+            return;
+        }
+
+        World world = location.getWorld();
+
+        if (world == null) {
+            return;
+        }
+
+        world.playSound(
+                location,
+                Sound.ENTITY_BEE_LOOP,
+                0.8F,
+                SOUND_PITCH
+        );
     }
-
-    World world = location.getWorld();
-
-    if (world == null) {
-        return;
-    }
-
-    world.playSound(
-            location,
-            Sound.ENTITY_BEE_LOOP,
-            0.8F,
-            SOUND_PITCH
-    );
-}
 
     private void spawnFlightParticles(
             Location location,
@@ -351,12 +455,7 @@ public final class FpvDrone {
 
         manager.unregister(pilot);
 
-        if (bat != null && bat.isValid()) {
-
-            bat.removePassenger(pilot);
-
-            bat.remove();
-        }
+        cleanupEntities();
 
         spawnCrashEffect(location);
 
@@ -380,9 +479,9 @@ public final class FpvDrone {
                     );
 
                     ExplosionUtil.makeCrater(
-                            (MillitaryTheme) plugin,
+                            plugin,
                             location,
-                            4,           // FPV полегче
+                            4,
                             2,
                             "#FpvDrone"
                     );
@@ -390,6 +489,37 @@ public final class FpvDrone {
         );
 
         returnPilot();
+    }
+
+    public void destroy() {
+
+        if (destroyed) {
+            return;
+        }
+
+        destroyed = true;
+
+        manager.unregister(pilot);
+
+        cleanupEntities();
+
+        returnPilot();
+    }
+
+    private void cleanupEntities() {
+
+        if (bat != null && bat.isValid()) {
+
+            bat.removePassenger(pilot);
+
+            bat.remove();
+        }
+
+        if (droneDisplay != null
+                && droneDisplay.isValid()) {
+
+            droneDisplay.remove();
+        }
     }
 
     private void spawnCrashEffect(
@@ -449,26 +579,6 @@ public final class FpvDrone {
                 1.2F,
                 0.8F
         );
-    }
-
-    public void destroy() {
-
-        if (destroyed) {
-            return;
-        }
-
-        destroyed = true;
-
-        manager.unregister(pilot);
-
-        if (bat != null && bat.isValid()) {
-
-            bat.removePassenger(pilot);
-
-            bat.remove();
-        }
-
-        returnPilot();
     }
 
     private void returnPilot() {
