@@ -5,8 +5,14 @@
     "militarytheme_ak": {
       "textures": "textures/items/ak"
     },
+    "militarytheme_drone": {
+      "textures": "textures/items/drone"
+    },
     "militarytheme_flamethrower": {
       "textures": "textures/items/flamethrower"
+    },
+    "militarytheme_fpv_drone": {
+      "textures": "textures/items/fpv_drone"
     },
     "militarytheme_pistol": {
       "textures": "textures/items/pistol"

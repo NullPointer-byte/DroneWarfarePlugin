@@ -1,0 +1,103 @@
+{
+  "format_version": 2,
+  "items": {
+    "minecraft:stick": [
+      {
+        "type": "definition",
+        "model": "militarytheme:ak_model",
+        "bedrock_identifier": "militarytheme:ak",
+        "display_name": "AK",
+        "bedrock_options": {
+          "icon": "militarytheme_ak",
+          "display_handheld": true,
+          "creative_category": "equipment",
+          "allow_offhand": true
+        }
+      },
+      {
+        "type": "definition",
+        "model": "militarytheme:drone_model",
+        "bedrock_identifier": "militarytheme:drone",
+        "display_name": "Drone",
+        "bedrock_options": {
+          "icon": "militarytheme_drone",
+          "display_handheld": true,
+          "creative_category": "equipment",
+          "allow_offhand": true
+        }
+      },
+      {
+        "type": "definition",
+        "model": "militarytheme:flamethrower_model",
+        "bedrock_identifier": "militarytheme:flamethrower",
+        "display_name": "Flamethrower",
+        "bedrock_options": {
+          "icon": "militarytheme_flamethrower",
+          "display_handheld": true,
+          "creative_category": "equipment",
+          "allow_offhand": true
+        }
+      },
+      {
+        "type": "definition",
+        "model": "militarytheme:fpv_drone_model",
+        "bedrock_identifier": "militarytheme:fpv_drone",
+        "display_name": "FPV Drone",
+        "bedrock_options": {
+          "icon": "militarytheme_fpv_drone",
+          "display_handheld": true,
+          "creative_category": "equipment",
+          "allow_offhand": true
+        }
+      },
+      {
+        "type": "definition",
+        "model": "militarytheme:pistol_model",
+        "bedrock_identifier": "militarytheme:pistol",
+        "display_name": "Pistol",
+        "bedrock_options": {
+          "icon": "militarytheme_pistol",
+          "display_handheld": true,
+          "creative_category": "equipment",
+          "allow_offhand": true
+        }
+      },
+      {
+        "type": "definition",
+        "model": "militarytheme:rpg_model",
+        "bedrock_identifier": "militarytheme:rpg",
+        "display_name": "RPG",
+        "bedrock_options": {
+          "icon": "militarytheme_rpg",
+          "display_handheld": true,
+          "creative_category": "equipment",
+          "allow_offhand": true
+        }
+      },
+      {
+        "type": "definition",
+        "model": "militarytheme:shotgun_model",
+        "bedrock_identifier": "militarytheme:shotgun",
+        "display_name": "Shotgun",
+        "bedrock_options": {
+          "icon": "militarytheme_shotgun",
+          "display_handheld": true,
+          "creative_category": "equipment",
+          "allow_offhand": true
+        }
+      },
+      {
+        "type": "definition",
+        "model": "militarytheme:sniper_model",
+        "bedrock_identifier": "militarytheme:sniper",
+        "display_name": "Sniper",
+        "bedrock_options": {
+          "icon": "militarytheme_sniper",
+          "display_handheld": true,
+          "creative_category": "equipment",
+          "allow_offhand": true
+        }
+      }
+    ]
+  }
+}
